@@ -1,12 +1,26 @@
 #!/bin/bash
 # Script to run nmap scan of selected Class C address block on selected port(s)
 # and clean-up results to return list of ip addresses with open port(s)
-# based on Null Byte script by OTW and modifications by appledash48
+# based on Null Byte script by OTW and modifications by appledash48:
+# https://null-byte.wonderhowto.com/how-to/hack-like-pro-scripting-for-aspiring-hacker-part-1-bash-basics-0149422/
 # this version by mrdavesampson 2018-08-18
 
 # set variable for working directory where results will be saved
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
+# boilerplate function for GOTO functionality (jumpto)
+function jumpto
+{
+    label=$1
+    cmd=$(sed -n "/$label:/{:a;n;p;ba};" $0 | grep -v ':$')
+    eval "$cmd"
+    exit
+}
+start=${1:-"start"}
+jumpto $start
+
+start:
+#script starts here
 echo
 echo "Enter IP address block to scan (/24)"
 echo "Example: google.com is 74.125.225.0"
@@ -43,12 +57,6 @@ then
     echo
     echo
 else
-    echo
-    echo "Please re-run this script with the correct IP subnet and port(s) you wish to scan"
-    echo
-    echo "Exiting script now ..." 
-    echo
-    echo    
-exit
+     jumpto $start
 fi #Cx2H    
 
