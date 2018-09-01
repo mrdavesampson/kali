@@ -6,6 +6,7 @@
 #   Present File Output Options: List of IPs with Open Ports vs ??
 #   Filename to Reflect Scan Type (Port only for Port Scans)
 #   IPCALC CIDR calculations
+#   easier interface selection, ie enter for default
 
 clear
 
@@ -14,9 +15,45 @@ echo "/ __) / __)  /__\  ( \( )(  )  (  _  )/ __)  /__\  (  )  ";
 echo "\__ \( (__  /(__)\  )  (  )(__  )(_)(( (__  /(__)\  )(__ ";
 echo "(___/ \___)(__)(__)(_)\_)(____)(_____)\___)(__)(__)(____)";
 
-
-# set variable for working directory where results will be saved
+# set variable for working directory where results will be saved by default
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+while :
+do
+echo
+read -r -p "Save scan reults in current directory: "$SCRIPT_DIR"? [Y/n]" response
+response=${response,,}
+if [[ $response =~ ^(yes|y)$ ]]
+then 
+   DIR=${SCRIPT_DIR} 
+   echo "Scan results will be saved in "$DIR"" && break
+else
+   echo
+   echo "Enter path to directory where results should be saved"; echo
+   read DIR
+   if [ -d "${DIR}" ] 
+   then
+        echo
+        echo "Scan results will be saved in "$DIR"" && break
+   else
+        echo
+        read -r -p ""$DIR" does not exist; would you like to create it? [y/N]" response; echo
+        response=${response,,}
+        if [[ $response =~ ^(yes|y)$ ]]
+        then 
+            mkdir -p ${DIR}
+            if [ -d "${DIR}" ]
+            then
+                echo ""$DIR" created successfully" && break
+            else 
+                echo "Unable to create $DIR directory; Please try again"
+            fi
+         else
+            echo "No directory chosen ... please try again"
+         fi   
+     fi
+fi 
+done
 
 # have user select interface to use and store that in a variable
 echo
@@ -60,7 +97,6 @@ else
         echo
     fi    
 fi
-
 
 # boilerplate function for GOTO functionality (jumpto)
 function jumpto
@@ -194,7 +230,7 @@ then
     echo
     cat scanresults-$NETWORK-port-$PORT
     echo
-    echo "Results have been saved to "$SCRIPT_DIR"/scanresults-"$NETWORK"-port-"$PORT""
+    echo "Results have been saved to "$DIR"/scanresults-"$NETWORK"-port-"$PORT""
     echo
     echo
 else
