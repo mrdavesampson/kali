@@ -26,6 +26,7 @@ response=${response,,}
 if [[ $response =~ ^(yes|y)$ ]]
 then 
    DIR=${SCRIPT_DIR} 
+   echo
    echo "Scan results will be saved in "$DIR"" && break
 else
    echo
@@ -37,37 +38,53 @@ else
         echo "Scan results will be saved in "$DIR"" && break
    else
         echo
-        read -r -p ""$DIR" does not exist; would you like to create it? [y/N]" response; echo
+        read -r -p ""$DIR" does not exist; would you like to create it? [y/N]" response
         response=${response,,}
         if [[ $response =~ ^(yes|y)$ ]]
         then 
             mkdir -p ${DIR}
             if [ -d "${DIR}" ]
             then
+                echo
                 echo ""$DIR" created successfully" && break
             else 
+                echo
                 echo "Unable to create $DIR directory; Please try again"
             fi
          else
+            echo
             echo "No directory chosen ... please try again"
          fi   
      fi
 fi 
 done
 
-# have user select interface to use and store that in a variable
+# check for active network interfaces; if more than 1 prompt user to choose
+i=0
 echo
-echo "Please select the network interface corresponding to the local subnet you want to scan (e.g. "wlan0" or "eth0"):"
 echo
-ip -o -c addr show | grep -v 127.0.0.1 | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
+echo "Active Network Interfaces: "
 echo
-read DEV
-
+for DEV in `ip addr | awk '/state UP/ {print $2}' | sed 's/.$//'`; do
+((i++))
+ip -o -c addr show | grep -w $DEV | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
+done
+if i=1
+then
+    echo
+    echo "Only one active interface found; defaulting to "$DEV""
+else
+    echo
+    echo "Please select the network interface corresponding to the local subnet you want to scan (e.g. "wlan0" or "eth0"):"
+    echo
+    ip -o -c addr show | grep -v 127.0.0.1 | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
+    echo
+    read DEV
+    echo "You have chosen interface "$DEV""
+fi
 # set variables for local subnet based on device chosen
 IPADDR="$(ifconfig $DEV | awk '$1 == "inet" {print $2}')"
-MASK="$(ifconfig $DEV | awk '$1 == "inet" {print $4}')" 
-echo
-echo "You have chosen interface "$DEV""   
+MASK="$(ifconfig $DEV | awk '$1 == "inet" {print $4}')"  
 echo
 echo "Local IP Address is "${IPADDR}""
 echo 
@@ -204,7 +221,7 @@ stealth=${stealth,,}
 if [[ $stealth =~ ^(yes|y)$ ]]
 then
     OPTS="${OPTS} -sS"
-fi
+fi    
 
 # final confirmation of options and actual nmap scan
 SCAN:
@@ -212,13 +229,8 @@ echo
 echo "Perform Scan of "$SUBNET" with options: "${OPTS}"? [y/N]"
 read response
 if [[ $response =~ ^(yes|y)$ ]] 
-then
-    # Provide Report Options based on scan type    
+then 
     echo    
-    if OPTS="-sn"
-    then
-	echo "We should provide a different report option for ping scan"
-    fi	
     echo
     echo "Performing NMAP Scan of "$SUBNET" with options: "${OPTS}" now ..."
     echo
