@@ -204,7 +204,7 @@ stealth=${stealth,,}
 if [[ $stealth =~ ^(yes|y)$ ]]
 then
     OPTS="${OPTS} -sS"
-fi    
+fi
 
 # final confirmation of options and actual nmap scan
 SCAN:
@@ -212,8 +212,13 @@ echo
 echo "Perform Scan of "$SUBNET" with options: "${OPTS}"? [y/N]"
 read response
 if [[ $response =~ ^(yes|y)$ ]] 
-then 
+then
+    # Provide Report Options based on scan type    
     echo    
+    if OPTS="-sn"
+    then
+	echo "We should provide a different report option for ping scan"
+    fi	
     echo
     echo "Performing NMAP Scan of "$SUBNET" with options: "${OPTS}" now ..."
     echo
