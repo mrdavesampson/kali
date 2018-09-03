@@ -2,11 +2,10 @@
 # Script to run nmap scan of local subnet
 # by mrdavesampson 2018-08-25
 #
-# TO DO: 
-#   Present File Output Options: List of IPs with Open Ports vs ??
-#   Filename to Reflect Scan Type (Port only for Port Scans)
+# TO DO:
+#   Parsing of Ping Scan
+#   Check other Report formats/options
 #   IPCALC CIDR calculations
-#   easier interface selection, ie enter for default
 
 clear
 
@@ -24,8 +23,8 @@ echo
 read -r -p "Save scan reults in current directory: "$SCRIPT_DIR"? [Y/n]  " response
 response=${response,,}
 if [[ $response =~ ^(yes|y)$ ]]
-then 
-   DIR=${SCRIPT_DIR} 
+then
+   DIR=${SCRIPT_DIR}
    echo
    echo "Scan results will be saved in "$DIR"" && break
 else
@@ -35,7 +34,7 @@ else
    read RDIR
    #convert relative path to absolute path
    DIR=$(readlink -f ${RDIR})
-   if [ -d "${DIR}" ] 
+   if [ -d "${DIR}" ]
    then
         echo
         echo "Scan results will be saved in "$DIR"" && break
@@ -44,22 +43,22 @@ else
         read -r -p ""$DIR" does not exist; would you like to create it? [y/N]  " response
         response=${response,,}
         if [[ $response =~ ^(yes|y)$ ]]
-        then 
+        then
             mkdir -p ${DIR}
             if [ -d "${DIR}" ]
             then
                 echo
                 echo ""$DIR" created successfully" && break
-            else 
+            else
                 echo
                 echo "Unable to create $DIR directory; Please try again"
             fi
          else
             echo
             echo "No directory chosen ... please try again"
-         fi   
+         fi
      fi
-fi 
+fi
 done
 
 # check for active network interfaces; if more than 1 prompt user to choose
@@ -68,7 +67,8 @@ echo
 echo
 echo "Active Network Interfaces: "
 echo
-for DEV in `ip addr | awk '/state UP/ {print $2}' | sed 's/.$//'`; do
+# for DEV in `ip addr | awk '/state UP/ {print $2}' | sed 's/.$//'`; do
+for DEV in $(ifconfig | grep -E "eth[(0-9)]:|wifi[(0-9)]:|wlan[(0-9)]:" | cut -f1 -d ":"); do
 ((i++))
 ip -o -c addr show | grep -w $DEV | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
 done
@@ -78,7 +78,7 @@ then
     echo
     echo "Please select the network interface corresponding to the local subnet you want to scan (e.g. "wlan0" or "eth0"):"
     echo
-    ip -o -c addr show | grep -v 127.0.0.1 | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
+    ip -o -c addr show | grep -v 127.0.0.1 | grep -v 169.254. | grep -w inet | awk '{printf "%-10s %s\n", $2, $4}'
     echo
     read DEV
     echo "You have chosen interface "$DEV""
@@ -86,33 +86,33 @@ fi
 
 # set variables for local subnet based on device chosen
 IPADDR="$(ifconfig $DEV | awk '$1 == "inet" {print $2}')"
-MASK="$(ifconfig $DEV | awk '$1 == "inet" {print $4}')"  
+MASK="$(ifconfig $DEV | awk '$1 == "inet" {print $4}')"
 echo
-echo "Local IP Address:   "${IPADDR}"" 
+echo "Local IP Address:   "${IPADDR}""
 echo "Local Subnet mask:  "${MASK}""
 
 if [[ $MASK = "255.255.255.0" ]]
-then 
+then
     NETWORK="$(ip -o addr show dev "$DEV" | awk '$3 == "inet" {print $4}' | cut -f1-3 -d ".")"
     SUBNET="${NETWORK}.0/24"
     echo "Local Subnet:       "${SUBNET}""
     echo
-else 
+else
     echo "This is not a /24 Subnet"
-    echo 
+    echo
     echo "Checking for ipcalc ..."
     echo
     # check for ipcalc program
     if ! [ -x "$(command -v ipcalc)" ]; then
-        # using first 3 octets to form /24     
+        # using first 3 octets to form /24
         NETWORK="$(ip -o addr show dev "$DEV" | awk '$3 == "inet" {print $4}' | cut -f1-3 -d ".")"
         SUBNET="${NETWORK}.0/24"
         echo "ipcalc is not installed; defaulting to /24 subnet: "${SUBNET}""
         echo
     else
-        echo "ipcalc installed. will calculate CIDR" 
+        echo "ipcalc installed. will calculate CIDR"
         echo
-    fi    
+    fi
 fi
 
 # boilerplate function for GOTO functionality (jumpto)
@@ -139,7 +139,7 @@ echo
 read OPTION
 
 case $OPTION in
-    [pP] ) 
+    [pP] )
         echo
         echo "Enter port to be scanned"
         echo "Example: 5505"
@@ -149,43 +149,43 @@ case $OPTION in
         echo
         read -r -p "Scan "$SUBNET" subnet for port(s) "$PORT"; Is this correct? [y/N]  " response
         response=${response,,}
-        if [[ $response =~ ^(yes|y)$ ]] 
-        then 
+        if [[ $response =~ ^(yes|y)$ ]]
+        then
             OPTS="-p "$PORT""
         else
             jumpto $START
-        fi    
+        fi
         ;;
 
     [aA] )
-        echo 
+        echo
         read -r -p "Perform Full Scan of "$SUBNET"; Is this correct? [y/N]  " response
         response=${response,,}
-        if [[ $response =~ ^(yes|y)$ ]] 
-        then 
+        if [[ $response =~ ^(yes|y)$ ]]
+        then
             OPTS="-A"
         else
             jumpto $START
-        fi    
+        fi
         ;;
 
     [sS] )
-        echo 
+        echo
         read -r -p "Perform Ping Scan of "$SUBNET"; Is this correct? [y/N]  " response
         response=${response,,}
-        if [[ $response =~ ^(yes|y)$ ]] 
-        then 
+        if [[ $response =~ ^(yes|y)$ ]]
+        then
             OPTS="-sn"
            # REP=""
            # FN=""
            # jumpto SCAN
         else
             jumpto $START
-        fi    
+        fi
         ;;
 
 
-    [mM] ) 
+    [mM] )
         echo
         echo "Enter scan options using correct syntax (NOTE: Stealth option will be selected later)"
         echo "Example: -p 1-65535 -sV [Full TCP port scan with service version detection]"
@@ -196,16 +196,16 @@ case $OPTION in
         echo "Scan "$SUBNET" subnet using options: "${OPTIONS}"; Is this correct? [y/N]"
         read response
         response=${response,,}
-        if [[ $response =~ ^(yes|y)$ ]] 
-        then 
+        if [[ $response =~ ^(yes|y)$ ]]
+        then
             OPTS="${OPTIONS}"
         else
             OPTS=""
             jumpto $START
-        fi    
+        fi
         ;;
 
-    [qQ] ) 
+    [qQ] )
         echo
         echo
         exit 0
@@ -218,16 +218,15 @@ case $OPTION in
 esac
 echo
 # prompt for stealth mode unless ping scan
-if [[ $OPTS="-sn" ]]
-then OPTS="-sn"
-else    
+if [[ $OPTS != "-sn" ]]
+then
     read -r -p "Use Stealth Mode? [y/N]" stealth
     stealth=${stealth,,}
     if [[ $stealth =~ ^(yes|y)$ ]]
     then
         OPTS="${OPTS} -sS"
-    fi   
-fi    
+    fi
+fi
 echo
 echo "Select report option:"
 while true
@@ -242,7 +241,7 @@ echo "   Q: Quit without scanning"
 echo
 read REPOPT
 case $REPOPT in
-    [nN] ) 
+    [nN] )
         REP="-oN"
         FN=""$DIR"/scanresults-$NETWORK-$OPTS"
         break
@@ -250,9 +249,9 @@ case $REPOPT in
     [oO] )
         echo
         if [[ $OPTION =~ ^(pPsS)$ ]]
-        then 
+        then
             REP="-oG"
-            if [[ $OPTION=~ ^(pP)$ ]]
+            if [[ $OPTION =~ ^(pP)$ ]]
             then
                 FN=""$DIR"/scanresults-$NETWORK-port-$PORT"
             else
@@ -290,21 +289,22 @@ case $REPOPT in
         ;;
 esac
 done
-        
+
 # final confirmation of options and actual nmap scan
 SCAN:
 echo
 read -r -p "Perform Scan of "$SUBNET" with options: "${OPTS}" "${REP}"? [y/N]  " response
-if [[ $response =~ ^(yes|y)$ ]] 
-then 
-    echo    
+if [[ $response =~ ^(yes|y)$ ]]
+then
+    echo
     echo
     echo "Performing NMAP Scan of "$SUBNET" with options: "${OPTS}" "${REP}" now ..."
-    echo 
+    echo
     nmap ${OPTS} ${SUBNET} ${REP} ${FN}
     echo
     if [[ $REP = "-oG" ]]
-       if [[ $OPTION=~ ^(pP)$ ]] 
+    then
+       if [[ $OPTION =~ ^(pP)$ ]]
         # Port Scan with Report Option O: Parse OPEN Ports
         then
             cat "$FN" | grep open > portsopen
@@ -339,8 +339,8 @@ then
             echo "Results have been saved to "$FN""
             echo
             echo
-        fi    
-    elif [[ $REP = "" ]]
+        fi
+    elif [ -z "$REP" ]
     then
         echo
         echo "Interactive Scan Complete, Goodbye."
@@ -352,8 +352,8 @@ then
         echo "Results have been saved to "$FN""
         echo
         echo
-    fi           
+    fi
 else
     jumpto $START
-fi    
+fi
 exit 0
