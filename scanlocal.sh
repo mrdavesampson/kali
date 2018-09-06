@@ -240,27 +240,30 @@ echo "   I: Interactive only - results will be output to screen but not saved"
 echo "   Q: Quit without scanning"
 echo
 read REPOPT
+
 case $REPOPT in
     [nN] )
         REP="-oN"
         FN=""$DIR"/scanresults-$NETWORK-$OPTS"
         break
         ;;
-    [oO] )
-        echo
-        if [[ $OPTION =~ ^(pPsS)$ ]]
-        then
+    [oO] )        
+        case $OPTION in
+        ([pP])
             REP="-oG"
-            if [[ $OPTION =~ ^(pP)$ ]]
-            then
-                FN=""$DIR"/scanresults-$NETWORK-port-$PORT"
-            else
-                FN=""$DIR"/scanresults-$NETWORK-online_hosts"
-            fi
+            FN=""$DIR"/scanresults-$NETWORK-port-$PORT"
             break
-        else
-            echo "Sorry, -oG is not valid report option for a "$OPS" scan "
-        fi
+            ;;
+        ([sS])
+            REP="-oG"
+            FN=""$DIR"/scanresults-$NETWORK-online_hosts"
+            break
+            ;;
+        *)  
+            echo
+            echo "Sorry, -oG is not valid report option for a "${OPTS}" scan "
+            ;;
+        esac    
         ;;
     [xX] )
         echo
@@ -289,13 +292,27 @@ case $REPOPT in
         ;;
 esac
 done
+echo "Summary:"
+echo
+echo "DEVICE:    "$DEV""
+echo "NETWORK:   "$NETWORK""
+echo "SUBNET:    "$SUBNET""
+echo "OPTIONS:   "$OPTS"" 
+#echo "OPTION=  "$OPTION""
+#echo "REPOPT= "$REPOPT""
+echo "OUTPUT:    "$REP""
+#echo "DIRECTORY: "$DIR""
+echo "FILENAME:  "$FN""
+
 
 # final confirmation of options and actual nmap scan
-SCAN:
+#SCAN:
 echo
-read -r -p "Perform Scan of "$SUBNET" with options: "${OPTS}" "${REP}"? [y/N]  " response
-if [[ $response =~ ^(yes|y)$ ]]
-then
+read -p "Press enter to continue"
+#read -r -p "Perform Scan of "$SUBNET" with options: "${OPTS}" "${REP}"? [y/N]  " response
+#response=${response,,}
+#if [[ $response =~ ^(yes|y)$ ]]
+#then
     echo
     echo
     echo "Performing NMAP Scan of "$SUBNET" with options: "${OPTS}" "${REP}" now ..."
@@ -304,7 +321,8 @@ then
     echo
     if [[ $REP = "-oG" ]]
     then
-       if [[ $OPTION =~ ^(pP)$ ]]
+        # if [[ $OPTION =~ ^(pP)$ ]]
+        if [[ ${OPTION,,} = p ]]
         # Port Scan with Report Option O: Parse OPEN Ports
         then
             cat "$FN" | grep open > portsopen
@@ -312,7 +330,7 @@ then
             #clean-up temp results files and then display final results
             echo
             echo "Cleaning up temp files ... "
-            rm -f scanresults
+            #rm -f scanresults
             rm -f portsopen
             echo
             echo "Showing list of vulnerable ip addresses now ..."
@@ -324,12 +342,12 @@ then
             echo
         else
         # Ping Scan with Report Option O: Parse Online Hosts
-            cat "$FN" | grep $NETWORK > hosts
-            cat hosts |cut -f2 -d ":" |cut -f1 -d"(" > $FN
-            #clean-up temp results files and then display final results
+            cat "$FN" | grep Up > hosts 
+            cat hosts | cut -f2 -d ":" | cut -f1 -d"(" > $FN
+            #clean-up temp results files and display final results
             echo
             echo "Cleaning up temp files ... "
-            rm -f scanresults
+            #rm -f scanresults
             rm -f hosts
             echo
             echo "Showing list of online hosts now ..."
@@ -353,7 +371,7 @@ then
         echo
         echo
     fi
-else
-    jumpto $START
-fi
+#else
+#    jumpto $START
+#fi
 exit 0
