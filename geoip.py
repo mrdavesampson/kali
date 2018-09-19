@@ -1,10 +1,11 @@
 #!/usr/bin/python
+# Simple front-end to pygeoip module for MaxMind database
+# Requires GeoLiteCity MaxMind database and pygeoip module
+
 import pygeoip
 import sys
 
 # TO DO:
-# check to see if argument was passed
-# if not, prompt for IP
 # check to make sure IP is valid
 # if not valid print usage & prompt for IP
 
