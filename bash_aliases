@@ -29,7 +29,19 @@ function apt-updater {
 # Change bash prompt. See the article
 # http://www-106.ibm.com/developerwork.../l-tip-prompt/
 # export PS1='\u\[\e[34;1m\]@\[\e[36;1m\]\H \[\e[34;1m\]\w\[\e[32;1m\] $ \[\e[0m\]'
-export PS1='\[\e[31;40;1m\]\u\[\e[37;1m\]@\[\e[35;1m\]\H\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] '
+# If terminal window, use title bar for prompt info
+
+if [ "$TERM" = "linux" ]
+then
+    #we're on the system console or maybe telnetting in
+    export PS1='\[\e[31;40;1m\]\u\[\e[37;1m\]@\[\e[35;1m\]\H\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] '
+else
+    #we're not on the console, assume an xterm
+    export PS1="\[\e]2;\u@\H \w\a\e[31;40;1m\]\u\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] " 
+fi
+
+
+#export PS1='\[\e[31;40;1m\]\u\[\e[37;1m\]@\[\e[35;1m\]\H\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] '
 
 # Monitor logs
 alias syslog='sudo tail -100f /var/log/syslog'
