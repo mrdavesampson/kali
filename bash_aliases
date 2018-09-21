@@ -4,8 +4,10 @@
 
 
 alias ls='ls --color=auto'
-alias ll='ls -hal --color=auto --time-style="+%b %d %Y %H:%M"'
+alias ll='ls -hl --color=auto --time-style="+%b %d %Y %H:%M"'
+alias la='ls -hal --color=auto --time-style="+%b %d %Y %H:%M"'
 alias lt='ls -hltr --color=auto --time-style="+%b %d %Y %H:%M"'
+alias lsd='ls -dahl --color=auto --time-style="+%b %d %Y %H:%M" -- */'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
@@ -37,7 +39,7 @@ then
     export PS1='\[\e[31;40;1m\]\u\[\e[37;1m\]@\[\e[35;1m\]\H\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] '
 else
     #we're not on the console, assume an xterm
-    export PS1="\[\e]2;\u@\H \w\a\e[31;40;1m\]\u\[\e[33;1m\]:\[\e[32;1m\]\w\[\e[31;40m\]$\[\e[0m\] " 
+    export PS1="\[\e]2;\u@\H \w\a\e[33;40;1m\]\u\[\e[31;1m\]:\[\e[32;1m\]\w\[\e[33;40m\]$\[\e[0m\] " 
 fi
 
 
