@@ -14,7 +14,7 @@ if len(sys.argv) == 1:
         print 'Usage: %s <ip address of host to query>' % sys.argv[0]
         sys.exit(1)
 
-try:				
+try:
 	# Lookup the host
 	query = ' '.join(sys.argv[1:])
 	host = api.host(query)
@@ -36,4 +36,4 @@ try:
 
 except Exception as e:
         print 'Error: %s' % e
-        sys.exit(1)			
+        sys.exit(1)

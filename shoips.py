@@ -25,4 +25,4 @@ try:
 		print '%s' % result['ip_str']
 except Exception as e:
         print 'Error: %s' % e
-        sys.exit(1)	
+        sys.exit(1)

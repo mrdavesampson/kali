@@ -11,7 +11,7 @@ import sys
 
 if len(sys.argv) == 1:
     ip = raw_input('IP to GeoLocate: ')
-    print ('') 
+    print ('')
 elif len(sys.argv) == 2:
     ip = str(sys.argv[1])
     print 'ip address = %s' % ip
@@ -20,11 +20,10 @@ else:
     print 'Too many arguments provided'
     ip = raw_input('IP to GeoLocate: ')
     print ('')
-    
-    
-gip = pygeoip.GeoIP('/root/pygeoip-0.3.2/GeoLiteCity.dat')
+
+gip = pygeoip.GeoIP('/root/GeoLiteCity.dat')
 rec = gip.record_by_addr(ip)
 for key,val in rec.items():
     print "%s: %s" % (key,val)
 
-print('')    
+print('')
