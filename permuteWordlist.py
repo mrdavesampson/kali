@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # coding=utf-8
-
+# TO DO: allow command line argument in addition to input file
 import argparse
 
 #leetDict = {
@@ -19,7 +19,8 @@ leetDict = {
   'a': ['4', '@'],
   'e': ['3'],
   'i': ['1'],
-  'o': ['0']
+  'o': ['0'],
+  's': ['$', '5']
 }
 
 
