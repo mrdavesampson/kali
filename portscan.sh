@@ -32,12 +32,12 @@ echo "Example: 5505"
 echo "Example2: To scan multiple ports, format it like this: 5505-6000"
 echo
 read PORT
-echo 
+echo
 read -r -p "Scanning "$IP" subnet for port "$PORT"; Is this correct? [y/N]" response
 response=${response,,}
-if [[ $response =~ ^(yes|y)$ ]] 
+if [[ $response =~ ^(yes|y)$ ]]
 then
-    echo	
+    echo
     echo "Scanning "$IP" on port "$PORT" now ..."
     echo
     nmap -sT $IP/24 -p $PORT -oG scanresults
@@ -58,5 +58,5 @@ then
     echo
 else
      jumpto $start
-fi #Cx2H    
+fi #Cx2H
 
