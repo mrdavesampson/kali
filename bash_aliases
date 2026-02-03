@@ -4,8 +4,8 @@
 
 
 alias ls='ls --color=auto'
-alias ll='ls -hl --color=auto --time-style="+%b %d %Y %H:%M"'
-alias la='ls -hal --color=auto --time-style="+%b %d %Y %H:%M"'
+alias ll='ls -halF --color=auto --time-style="+%b %d %Y %H:%M"'
+alias la='ls -hA --color=auto --time-style="+%b %d %Y %H:%M"'
 alias lt='ls -hltr --color=auto --time-style="+%b %d %Y %H:%M"'
 alias lsd='ls -dahl --color=auto --time-style="+%b %d %Y %H:%M" -- */'
 alias grep='grep --color=auto'
